@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import "package:intl/intl.dart" show DateFormat;
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:badges/badges.dart' as badges; // Alias the badges package
 import 'package:lottie/lottie.dart';
+import 'package:image_picker/image_picker.dart';
+
 
 void main() {
   runApp(MyApp());
@@ -19,19 +23,50 @@ class MyApp extends StatelessWidget {
 }
 
 // SignInPage
-class SignInPage extends StatelessWidget {
+class SignInPage extends StatefulWidget {
+  @override
+  _SignInPageState createState() => _SignInPageState();
+}
+
+class _SignInPageState extends State<SignInPage> {
+  // Create controllers to get input from the TextFields
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  // Function to validate input
+  void _validateAndSignIn() {
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      // Show an error message if fields are empty
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Please enter both email and password."),
+          backgroundColor: Colors.grey[700],
+        ),
+      );
+    } else {
+      // Replace with home page after successful sign-in
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MyStatelessApp()),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Padding(
-        padding: EdgeInsets.all(30.0),
+        padding: const EdgeInsets.all(30.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Heading
-            Text(
+            const Text(
               'Welcome Back!',
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -39,9 +74,9 @@ class SignInPage extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 5),
+            const SizedBox(height: 5),
             // Subheading
-            Text(
+            const Text(
               'Sign in to your account',
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -49,45 +84,41 @@ class SignInPage extends StatelessWidget {
                 color: Colors.black87,
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             // Email TextField with Icon
             TextField(
+              controller: _emailController,
               decoration: InputDecoration(
-                prefixIcon: Icon(Icons.email),
+                prefixIcon: const Icon(Icons.email),
                 labelText: 'Email',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
-            SizedBox(height: 15),
+            const SizedBox(height: 15),
 
             // Password TextField with Icon
             TextField(
+              controller: _passwordController,
               obscureText: true,
               decoration: InputDecoration(
-                prefixIcon: Icon(Icons.lock),
+                prefixIcon: const Icon(Icons.lock),
                 labelText: 'Password',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
-            SizedBox(height: 15),
+            const SizedBox(height: 15),
 
             // Sign In Button without primary color
             ElevatedButton(
-              onPressed: () {
-                // Replace with home page after successful sign-in
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => MyStatelessApp()),
-                );// Sign in logic
-              },
+              onPressed: _validateAndSignIn,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white30, // Neutral color
-                padding: EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -97,13 +128,13 @@ class SignInPage extends StatelessWidget {
                 style: TextStyle(fontSize: 18, color: Colors.grey[800]),
               ),
             ),
-            SizedBox(height: 15),
+            const SizedBox(height: 15),
 
             // Sign Up Link without primary color
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Don't have an account? "),
+                const Text("Don't have an account? "),
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -134,15 +165,16 @@ class SignUpPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
-      body: Padding(
-        padding: EdgeInsets.all(30.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(30.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Heading
-            Text(
+            const Text(
               'Register',
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -150,9 +182,9 @@ class SignUpPage extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 5),
+            const SizedBox(height: 5),
             // Subheading
-            Text(
+            const Text(
               'Create a new account',
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -160,81 +192,81 @@ class SignUpPage extends StatelessWidget {
                 color: Colors.black87,
               ),
             ),
-            SizedBox(height: 15),
+            const SizedBox(height: 15),
 
             // Name TextField
             TextField(
               decoration: InputDecoration(
-                prefixIcon: Icon(Icons.person),
+                prefixIcon: const Icon(Icons.person),
                 labelText: 'Name',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
 
             // Phone No TextField
             TextField(
               decoration: InputDecoration(
-                prefixIcon: Icon(Icons.phone),
+                prefixIcon: const Icon(Icons.phone),
                 labelText: 'Phone Number',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
 
             // Room No TextField
             TextField(
               decoration: InputDecoration(
-                prefixIcon: Icon(Icons.home),
+                prefixIcon: const Icon(Icons.home),
                 labelText: 'Room Number',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
 
             // Email TextField
             TextField(
               decoration: InputDecoration(
-                prefixIcon: Icon(Icons.email),
+                prefixIcon: const Icon(Icons.email),
                 labelText: 'Email',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
 
             // Password TextField
             TextField(
               obscureText: true,
               decoration: InputDecoration(
-                prefixIcon: Icon(Icons.lock),
+                prefixIcon: const Icon(Icons.lock),
                 labelText: 'Password',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
 
             // Confirm Password TextField
             TextField(
               obscureText: true,
               decoration: InputDecoration(
-                prefixIcon: Icon(Icons.lock_outline),
+                prefixIcon: const Icon(Icons.lock_outline),
                 labelText: 'Confirm Password',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             // Register Button without primary color
             ElevatedButton(
@@ -247,7 +279,7 @@ class SignUpPage extends StatelessWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white30, // Neutral color
-                padding: EdgeInsets.symmetric(vertical: 10),
+                padding: const EdgeInsets.symmetric(vertical: 10),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -257,13 +289,13 @@ class SignUpPage extends StatelessWidget {
                 style: TextStyle(fontSize: 18, color: Colors.grey[800]),
               ),
             ),
-            SizedBox(height: 15),
+            const SizedBox(height: 15),
 
             // Sign In Link without primary color
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Already have an account? "),
+                const Text("Already have an account? "),
                 GestureDetector(
                   onTap: () {
                     Navigator.pop(context);
@@ -336,18 +368,18 @@ class _MyAppState extends State<MyStatelessApp> {
           bottomNavigationBar: Builder(
             builder: (context) => CurvedNavigationBar(
               backgroundColor: Colors.blue.shade900,
-              color: Colors.white, // Color of the navigation bar
+              color: Colors.white, // Color of the navigation ba
               buttonBackgroundColor: Colors.white, // Color of the middle button
               height: 60, // Height of the navigation bar
               items: <Widget>[
                 badges.Badge(
                   badgeContent: Text(
                     getTotalSelectedClothes().toString(),
-                    style: TextStyle(color: Colors.white, fontSize: 12),
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
                   ),
                   showBadge: getTotalSelectedClothes() > 0,
                   position: badges.BadgePosition.topEnd(top: -12, end: -12),
-                  child: Icon(Icons.shopping_basket_outlined,
+                  child: const Icon(Icons.shopping_basket_outlined,
                       size: 30, color: Colors.blue),
                 ),
               ],
@@ -382,15 +414,15 @@ class _MyAppState extends State<MyStatelessApp> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'HI NISCHAL !',
                             style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold),
                           ),
-                          SizedBox(
-                            height: 8,
+                          const SizedBox(
+                            height: 10,
                           ),
                           Text(
                             '${DateFormat('yMMMMd').format(time)}',
@@ -398,29 +430,33 @@ class _MyAppState extends State<MyStatelessApp> {
                           ),
                         ],
                       ),
-                      Container(
-                          decoration: BoxDecoration(
-                            color: Colors.blue[600],
-                            borderRadius: BorderRadius.circular(40),
-                          ),
-                          padding: EdgeInsets.all(0),
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                  buildContext,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                      const ProfilePage()));
-                            },
-                            child: Container(
-                              height: 30,
-                              width: 30,
-                              color: Colors.red,
-                            ),
-                          )),
-                    ],
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.blue[700],
+                  borderRadius: BorderRadius.circular(70),
+                ),
+                padding: const EdgeInsets.all(2),
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ProfilePage()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: Size(50, 50), // Adjusted size for a smaller button
+                    padding: EdgeInsets.all(8), // Optional padding adjustment
                   ),
-                  SizedBox(height: 20),
+                  child: Icon(
+                    Icons.person,
+                    size: 20, // Smaller icon size
+                  ),
+                ),
+              )
+
+              ],
+                  ),
+                  const SizedBox(height: 20),
 
                   // TabBar
                   TabBar(
@@ -429,13 +465,13 @@ class _MyAppState extends State<MyStatelessApp> {
                     unselectedLabelColor: Colors.blue[300],
                     indicatorColor: Colors.white,
                     tabs: [
-                      Tab(
+                      const Tab(
                           text: 'Wash and Fold',
                           icon: Icon(Icons.local_laundry_service)),
-                      Tab(
+                      const Tab(
                           text: 'Special Wash',
                           icon: Icon(Icons.cleaning_services)),
-                      Tab(text: 'Order History', icon: Icon(Icons.history)),
+                      const Tab(text: 'Order History', icon: Icon(Icons.history)),
                     ],
                   ),
 
@@ -495,9 +531,9 @@ class _MyAppState extends State<MyStatelessApp> {
               // Display Current Total Selected Clothes
               Text(
                 "Total Selected Clothes: ${getTotalSelectedClothes()} / 6",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Horizontal scrollable Male and Female clothes
               SizedBox(
@@ -526,16 +562,16 @@ class _MyAppState extends State<MyStatelessApp> {
                   ],
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               Expanded(
                 child: ListView(
                   children: [
                     Text(
                       isMaleSelected ? "Male Clothes" : "Female Clothes",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
                     // Display different clothes based on selection
                     if (isMaleSelected) ...[
@@ -571,7 +607,7 @@ class _MyAppState extends State<MyStatelessApp> {
                           "https://i.pinimg.com/564x/0d/80/7e/0d807e0f03223c324b4adcd7743f4c61.jpg",
                           washAndFoldClothesQuantities),
                     ],
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
                     // Submit Button
                     ElevatedButton(
@@ -579,7 +615,7 @@ class _MyAppState extends State<MyStatelessApp> {
                         // Add action to handle form submission
                         print("Clothes added to Wash and Fold!");
                       },
-                      child: Text("Add to Basket"),
+                      child: const Text("Add to Basket"),
                       style: ElevatedButton.styleFrom(
                         shadowColor:
                         Colors.blue.shade900, // Button color
@@ -600,16 +636,16 @@ class _MyAppState extends State<MyStatelessApp> {
           // Display Current Total Selected Clothes
           Text(
             "Total Selected Clothes: ${getTotalSelectedClothes()} / 6",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
 
           // Special Services Selection
-          Text(
+          const Text(
             "Select Special Services",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           ...specialServices.keys.map((service) {
             return CheckboxListTile(
               title: Text(service),
@@ -621,25 +657,25 @@ class _MyAppState extends State<MyStatelessApp> {
               },
             );
           }).toList(),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
 
           // Items Selection for Special Wash
-          Text(
+          const Text(
             "Select Items for Special Wash",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           ...specialWashClothesQuantities.keys.map((item) {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(item, style: TextStyle(fontSize: 16)),
+                  Text(item, style: const TextStyle(fontSize: 16)),
                   Row(
                     children: [
                       IconButton(
-                        icon: Icon(Icons.remove),
+                        icon: const Icon(Icons.remove),
                         onPressed: () {
                           setState(() {
                             if (specialWashClothesQuantities[item]! > 0) {
@@ -650,9 +686,9 @@ class _MyAppState extends State<MyStatelessApp> {
                         },
                       ),
                       Text('${specialWashClothesQuantities[item]}',
-                          style: TextStyle(fontSize: 16)),
+                          style: const TextStyle(fontSize: 16)),
                       IconButton(
-                        icon: Icon(Icons.add),
+                        icon: const Icon(Icons.add),
                         onPressed: getTotalSelectedClothes() < 6
                             ? () {
                           setState(() {
@@ -662,7 +698,7 @@ class _MyAppState extends State<MyStatelessApp> {
                         }
                             : () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
+                            const SnackBar(
                                 content: Text(
                                     "You can only select up to 6 clothes in total.")),
                           );
@@ -674,11 +710,11 @@ class _MyAppState extends State<MyStatelessApp> {
               ),
             );
           }).toList(),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
 
           // Additional Instructions
           TextField(
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: "Additional Instructions",
               border: OutlineInputBorder(),
             ),
@@ -689,7 +725,7 @@ class _MyAppState extends State<MyStatelessApp> {
               });
             },
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
 
           // Summary Section
           Card(
@@ -699,13 +735,13 @@ class _MyAppState extends State<MyStatelessApp> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     "Order Summary",
                     style:
                     TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  Divider(),
-                  Text(
+                  const Divider(),
+                  const Text(
                     "Selected Services:",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
@@ -713,8 +749,8 @@ class _MyAppState extends State<MyStatelessApp> {
                       .where((entry) => entry.value)
                       .map((entry) => Text("- ${entry.key}"))
                       .toList(),
-                  SizedBox(height: 10),
-                  Text(
+                  const SizedBox(height: 10),
+                  const Text(
                     "Wash and Fold Items:",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
@@ -722,8 +758,8 @@ class _MyAppState extends State<MyStatelessApp> {
                       .where((entry) => entry.value > 0)
                       .map((entry) => Text("- ${entry.key}: ${entry.value}"))
                       .toList(),
-                  SizedBox(height: 10),
-                  Text(
+                  const SizedBox(height: 10),
+                  const Text(
                     "Special Wash Items:",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
@@ -731,8 +767,8 @@ class _MyAppState extends State<MyStatelessApp> {
                       .where((entry) => entry.value > 0)
                       .map((entry) => Text("- ${entry.key}: ${entry.value}"))
                       .toList(),
-                  SizedBox(height: 10),
-                  Text(
+                  const SizedBox(height: 10),
+                  const Text(
                     "Additional Instructions:",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
@@ -743,7 +779,7 @@ class _MyAppState extends State<MyStatelessApp> {
               ),
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
 
           // Submit Button
           Center(
@@ -753,7 +789,7 @@ class _MyAppState extends State<MyStatelessApp> {
                 // Validate selections
                 if (specialServices.values
                     .every((selected) => !selected)) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                       content:
                       Text("Please select at least one service.")));
                   return;
@@ -770,11 +806,11 @@ class _MyAppState extends State<MyStatelessApp> {
                 );
               }
                   : null,
-              child: Text("Submit"),
+              child: const Text("Submit"),
               style: ElevatedButton.styleFrom(
                 padding:
-                EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                textStyle: TextStyle(fontSize: 16),
+                const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                textStyle: const TextStyle(fontSize: 16),
               ),
             ),
           ),
@@ -785,7 +821,7 @@ class _MyAppState extends State<MyStatelessApp> {
 
   // Function to build Order History Tab (Placeholder)
   Widget buildOrderHistoryTab() {
-    return Center(
+    return const Center(
         child: Text('History Content',
             style: TextStyle(color: Colors.black)));
   }
@@ -799,7 +835,7 @@ class _MyAppState extends State<MyStatelessApp> {
         label: Text(category),
         avatar: Icon(icon, color: color),
         backgroundColor: isSelected ? Colors.blue[100] : Colors.grey[200],
-        labelStyle: TextStyle(color: Colors.black),
+        labelStyle: const TextStyle(color: Colors.black),
       ),
     );
   }
@@ -820,14 +856,14 @@ class _MyAppState extends State<MyStatelessApp> {
                 height: 40,
                 fit: BoxFit.cover,
               ),
-              SizedBox(width: 10),
-              Text(clothType, style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 10),
+              Text(clothType, style: const TextStyle(fontSize: 16)),
             ],
           ),
           Row(
             children: [
               IconButton(
-                icon: Icon(Icons.remove),
+                icon: const Icon(Icons.remove),
                 onPressed: () {
                   setState(() {
                     if (clothesQuantities[clothType]! > 0) {
@@ -838,9 +874,9 @@ class _MyAppState extends State<MyStatelessApp> {
                 },
               ),
               Text('${clothesQuantities[clothType]}',
-                  style: TextStyle(fontSize: 16)),
+                  style: const TextStyle(fontSize: 16)),
               IconButton(
-                icon: Icon(Icons.add),
+                icon: const Icon(Icons.add),
                 onPressed: getTotalSelectedClothes() < 6
                     ? () {
                   setState(() {
@@ -850,7 +886,7 @@ class _MyAppState extends State<MyStatelessApp> {
                 }
                     : () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                         content: Text(
                             "You can only select up to 6 clothes in total.")),
                   );
@@ -873,14 +909,14 @@ class BasketPage extends StatelessWidget {
   final VoidCallback onClearSelections;
 
   const BasketPage({
-    Key? key,
+    super.key,
     required this.washAndFoldClothes,
     required this.specialWashClothes,
     required this.specialServices,
     required this.additionalInstructions,
     required this.getTotalSelectedClothes,
     required this.onClearSelections,
-  }) : super(key: key);
+  });
 
   // Helper method to build clothes list
   Widget _buildClothesList(String title, Map<String, int> clothes) {
@@ -888,7 +924,7 @@ class BasketPage extends StatelessWidget {
         .where((entry) => entry.value > 0)
         .map(
           (entry) => ListTile(
-        leading: Icon(Icons.check_circle, color: Colors.green),
+        leading: const Icon(Icons.check_circle, color: Colors.green),
         title: Text(entry.key),
         trailing: Text('Quantity: ${entry.value}'),
       ),
@@ -897,7 +933,7 @@ class BasketPage extends StatelessWidget {
 
     if (items.isEmpty) {
       items.add(
-        ListTile(
+        const ListTile(
           title: Text('No items selected.'),
         ),
       );
@@ -909,11 +945,11 @@ class BasketPage extends StatelessWidget {
         Text(
           title,
           style:
-          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        Divider(),
+        const Divider(),
         ...items,
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
       ],
     );
   }
@@ -924,7 +960,7 @@ class BasketPage extends StatelessWidget {
         .where((entry) => entry.value)
         .map(
           (entry) => ListTile(
-        leading: Icon(Icons.check_circle, color: Colors.green),
+        leading: const Icon(Icons.check_circle, color: Colors.green),
         title: Text(entry.key),
       ),
     )
@@ -932,7 +968,7 @@ class BasketPage extends StatelessWidget {
 
     if (selectedServices.isEmpty) {
       selectedServices.add(
-        ListTile(
+        const ListTile(
           title: Text('No services selected.'),
         ),
       );
@@ -941,13 +977,13 @@ class BasketPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Selected Services',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        Divider(),
+        const Divider(),
         ...selectedServices,
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
       ],
     );
   }
@@ -956,7 +992,7 @@ class BasketPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Your Basket'),
+        title: const Text('Your Basket'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -968,9 +1004,9 @@ class BasketPage extends StatelessWidget {
               Text(
                 "Total Selected Clothes: ${getTotalSelectedClothes()} / 6",
                 style:
-                TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Wash and Fold Items
               _buildClothesList(
@@ -984,20 +1020,20 @@ class BasketPage extends StatelessWidget {
                   'Special Wash Items', specialWashClothes),
 
               // Additional Instructions
-              Text(
+              const Text(
                 'Additional Instructions',
                 style:
                 TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              Divider(),
+              const Divider(),
               Text(additionalInstructions.isNotEmpty
                   ? additionalInstructions
                   : 'None'),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // Pickup/Dropoff Date and Time
-              PickupTimeSelector(),
-              SizedBox(height: 20),
+              const PickupTimeSelector(),
+              const SizedBox(height: 20),
 
               // Submit Button
               Center(
@@ -1013,17 +1049,17 @@ class BasketPage extends StatelessWidget {
                         ),
                       );
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content:
                           Text("Your basket is empty.")));
                     }
                   },
-                  child: Text("Submit"),
                   style: ElevatedButton.styleFrom(
                     padding:
-                    EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                    textStyle: TextStyle(fontSize: 16),
+                    const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                    textStyle: const TextStyle(fontSize: 16),
                   ),
+                  child: const Text("Submit"),
                 ),
               ),
             ],
@@ -1037,8 +1073,7 @@ class BasketPage extends StatelessWidget {
 class SubmissionPage extends StatefulWidget {
   final VoidCallback onClearSelections;
 
-  const SubmissionPage({Key? key, required this.onClearSelections})
-      : super(key: key);
+  const SubmissionPage({super.key, required this.onClearSelections});
 
   @override
   State<SubmissionPage> createState() => _SubmissionPageState();
@@ -1049,7 +1084,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
   void initState() {
     super.initState();
     // Simulate a delay and show the animation
-    Future.delayed(Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       setState(() {});
     });
   }
@@ -1067,7 +1102,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
               // After animation, clear selections and go back
               widget.onClearSelections();
               Navigator.of(context).popUntil((route) => route.isFirst);
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                   content: Text("Your laundry request has been submitted!")));
             });
           },
@@ -1078,7 +1113,7 @@ class _SubmissionPageState extends State<SubmissionPage> {
 }
 
 class PickupTimeSelector extends StatefulWidget {
-  const PickupTimeSelector({Key? key}) : super(key: key);
+  const PickupTimeSelector({super.key});
 
   @override
   State<PickupTimeSelector> createState() => _PickupTimeSelectorState();
@@ -1094,7 +1129,7 @@ class _PickupTimeSelectorState extends State<PickupTimeSelector> {
       context: context,
       initialDate: selectedDate,
       firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
     );
     if (picked != null && picked != selectedDate)
       setState(() {
@@ -1106,10 +1141,11 @@ class _PickupTimeSelectorState extends State<PickupTimeSelector> {
   Future<void> _selectTime(BuildContext context) async {
     final TimeOfDay? picked =
     await showTimePicker(context: context, initialTime: selectedTime);
-    if (picked != null && picked != selectedTime)
+    if (picked != null && picked != selectedTime) {
       setState(() {
         selectedTime = picked;
       });
+    }
   }
 
   @override
@@ -1117,7 +1153,7 @@ class _PickupTimeSelectorState extends State<PickupTimeSelector> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Pickup Date:',
           style: TextStyle(fontSize: 16),
         ),
@@ -1125,11 +1161,11 @@ class _PickupTimeSelectorState extends State<PickupTimeSelector> {
           onPressed: () => _selectDate(context),
           child: Text(
             DateFormat('yMMMd').format(selectedDate),
-            style: TextStyle(fontSize: 16),
+            style: const TextStyle(fontSize: 16),
           ),
         ),
-        SizedBox(height: 10),
-        Text(
+        const SizedBox(height: 10),
+        const Text(
           'Pickup Time:',
           style: TextStyle(fontSize: 16),
         ),
@@ -1137,24 +1173,69 @@ class _PickupTimeSelectorState extends State<PickupTimeSelector> {
           onPressed: () => _selectTime(context),
           child: Text(
             selectedTime.format(context),
-            style: TextStyle(fontSize: 16),
+            style: const TextStyle(fontSize: 16),
           ),
         ),
       ],
     );
   }
 }
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final ImagePicker _picker = ImagePicker();
+  XFile? _imageFile;
+
+  void selectImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = pickedFile;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    Navigator.pop(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('profile'),
+        title: const Padding(
+          padding: EdgeInsets.only(top: 20.0),
+          child: Text("Profile"),
+        ),
+        centerTitle: true,
       ),
-      body: Text('lakal'),
+      body: Center(
+        child: SizedBox(
+          height: 120,
+          width: 120,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              CircleAvatar(
+                backgroundImage: _imageFile == null
+                    ? const AssetImage("assets/images/user.png")
+                    : FileImage(File(_imageFile!.path)) as ImageProvider,
+              ),
+              Positioned(
+                bottom: 10,
+                right: 10,
+                child: IconButton(
+                  onPressed: selectImage,
+                  icon: const Icon(Icons.add_a_photo),
+                  color: Colors.blueAccent,
+                  iconSize: 24,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
