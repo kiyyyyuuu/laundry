@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import "package:intl/intl.dart" show DateFormat;
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
@@ -23,6 +22,8 @@ class MyApp extends StatelessWidget {
 }
 
 // SignInPage
+
+
 class SignInPage extends StatefulWidget {
   @override
   _SignInPageState createState() => _SignInPageState();
@@ -53,6 +54,15 @@ class _SignInPageState extends State<SignInPage> {
         MaterialPageRoute(builder: (context) => MyStatelessApp()),
       );
     }
+  }
+
+  // Function to navigate to admin sign-in page
+  void _signInAsAdmin() {
+    // Navigate to Admin Sign-In page or handle admin sign-in logic here
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AdminSignInPage()),
+    );
   }
 
   @override
@@ -145,13 +155,30 @@ class _SignInPageState extends State<SignInPage> {
                   child: Text(
                     'Sign Up',
                     style: TextStyle(
-                        color: Colors.grey[800], // Neutral color for the link
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16
+                      color: Colors.grey[800], // Neutral color for the link
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 10), // Space between Sign Up and Admin Sign In
+
+            // Sign In as Admin Link
+            GestureDetector(
+              onTap: _signInAsAdmin,
+              child: Center(
+                child: Text(
+                  'Sign in as Admin',
+                  style: TextStyle(
+                    color: Colors.grey[800],
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -159,6 +186,22 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 }
+
+class AdminSignInPage extends StatefulWidget {
+  const AdminSignInPage({super.key});
+
+  @override
+  State<AdminSignInPage> createState() => _AdminSignInPageState();
+}
+
+class _AdminSignInPageState extends State<AdminSignInPage> {
+  @override
+  Widget build(BuildContext context) {
+    return const Placeholder();
+  }
+}
+
+
 
 // SignUpPage
 class SignUpPage extends StatelessWidget {
@@ -1210,31 +1253,37 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         centerTitle: true,
       ),
-      body: Center(
-        child: SizedBox(
-          height: 120,
-          width: 120,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              CircleAvatar(
-                backgroundImage: _imageFile == null
-                    ? const AssetImage("assets/images/user.png")
-                    : FileImage(File(_imageFile!.path)) as ImageProvider,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          const SizedBox(height: 20), // Space between AppBar and profile image
+          Center(
+            child: SizedBox(
+              height: 120,
+              width: 120,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  CircleAvatar(
+                    backgroundImage: _imageFile == null
+                        ? const AssetImage("assets/images/user.png")
+                        : FileImage(File(_imageFile!.path)) as ImageProvider,
+                  ),
+                  Positioned(
+                    bottom: 10,
+                    right: 10,
+                    child: IconButton(
+                      onPressed: selectImage,
+                      icon: const Icon(Icons.add_a_photo),
+                      color: Colors.blueAccent,
+                      iconSize: 24,
+                    ),
+                  ),
+                ],
               ),
-              Positioned(
-                bottom: 10,
-                right: 10,
-                child: IconButton(
-                  onPressed: selectImage,
-                  icon: const Icon(Icons.add_a_photo),
-                  color: Colors.blueAccent,
-                  iconSize: 24,
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
