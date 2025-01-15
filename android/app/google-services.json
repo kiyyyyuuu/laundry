@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "623922390833",
+    "project_id": "flutterapp-6ac77",
+    "storage_bucket": "flutterapp-6ac77.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:623922390833:android:d6d8719da24825e7787210",
+        "android_client_info": {
+          "package_name": "com.nischal.laundry_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0i4AthOKz3IiQ-hqsDQDu8YcO9o-xUA0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

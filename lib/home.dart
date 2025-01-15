@@ -1,13 +1,19 @@
 import 'dart:io';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import "package:intl/intl.dart" show DateFormat;
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:badges/badges.dart' as badges; // Alias the badges package
 import 'package:lottie/lottie.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
+void main() async {
 
-void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 
@@ -21,26 +27,20 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// SignInPage
-
-
 class SignInPage extends StatefulWidget {
   @override
   _SignInPageState createState() => _SignInPageState();
 }
 
 class _SignInPageState extends State<SignInPage> {
-  // Create controllers to get input from the TextFields
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // Function to validate input
-  void _validateAndSignIn() {
+  void _validateAndSignIn() async {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      // Show an error message if fields are empty
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text("Please enter both email and password."),
@@ -48,20 +48,45 @@ class _SignInPageState extends State<SignInPage> {
         ),
       );
     } else {
-      // Replace with home page after successful sign-in
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MyStatelessApp()),
-      );
+      try {
+        // Sign in with Firebase Authentication
+        UserCredential userCredential = await FirebaseAuth.instance
+            .signInWithEmailAndPassword(email: email, password: password);
+
+        if (userCredential.user != null) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => MyStatelessApp()),
+          );
+        }
+      } on FirebaseAuthException catch (e) {
+        String message = "Sign-in failed. Please try again.";
+        if (e.code == 'user-not-found') {
+          message = "No user found with this email.";
+        } else if (e.code == 'wrong-password') {
+          message = "Incorrect password.";
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text("An error occurred. Please try again later."),
+            backgroundColor: Colors.grey[700],
+          ),
+        );
+      }
     }
   }
 
-  // Function to navigate to admin sign-in page
   void _signInAsAdmin() {
-    // Navigate to Admin Sign-In page or handle admin sign-in logic here
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => AdminSignInPage()),
+      MaterialPageRoute(builder: (context) => AdminPage()), // Ensure AdminPage is defined
     );
   }
 
@@ -75,28 +100,18 @@ class _SignInPageState extends State<SignInPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Heading
             const Text(
               'Welcome Back!',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 5),
-            // Subheading
             const Text(
               'Sign in to your account',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.black87,
-              ),
+              style: TextStyle(fontSize: 18, color: Colors.black87),
             ),
             const SizedBox(height: 20),
-
-            // Email TextField with Icon
             TextField(
               controller: _emailController,
               decoration: InputDecoration(
@@ -108,8 +123,6 @@ class _SignInPageState extends State<SignInPage> {
               ),
             ),
             const SizedBox(height: 15),
-
-            // Password TextField with Icon
             TextField(
               controller: _passwordController,
               obscureText: true,
@@ -122,25 +135,21 @@ class _SignInPageState extends State<SignInPage> {
               ),
             ),
             const SizedBox(height: 15),
-
-            // Sign In Button without primary color
             ElevatedButton(
               onPressed: _validateAndSignIn,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white30, // Neutral color
+                backgroundColor: Colors.blue,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: Text(
+              child: const Text(
                 'Sign In',
-                style: TextStyle(fontSize: 18, color: Colors.grey[800]),
+                style: TextStyle(fontSize: 18, color: Colors.white),
               ),
             ),
             const SizedBox(height: 15),
-
-            // Sign Up Link without primary color
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -155,7 +164,7 @@ class _SignInPageState extends State<SignInPage> {
                   child: Text(
                     'Sign Up',
                     style: TextStyle(
-                      color: Colors.grey[800], // Neutral color for the link
+                      color: Colors.blue,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -163,16 +172,14 @@ class _SignInPageState extends State<SignInPage> {
                 ),
               ],
             ),
-            const SizedBox(height: 10), // Space between Sign Up and Admin Sign In
-
-            // Sign In as Admin Link
+            const SizedBox(height: 10),
             GestureDetector(
               onTap: _signInAsAdmin,
               child: Center(
                 child: Text(
                   'Sign in as Admin',
                   style: TextStyle(
-                    color: Colors.grey[800],
+                    color: Colors.blue,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                     decoration: TextDecoration.underline,
@@ -187,24 +194,310 @@ class _SignInPageState extends State<SignInPage> {
   }
 }
 
-class AdminSignInPage extends StatefulWidget {
-  const AdminSignInPage({super.key});
 
+
+class AdminPage extends StatefulWidget {
   @override
-  State<AdminSignInPage> createState() => _AdminSignInPageState();
+  _AdminPageState createState() => _AdminPageState();
 }
 
-class _AdminSignInPageState extends State<AdminSignInPage> {
+class _AdminPageState extends State<AdminPage> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  // Function to handle admin login
+  Future<void> _loginAsAdmin() async {
+    String username = _usernameController.text.trim();
+    String password = _passwordController.text.trim();
+
+    if (username.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Please enter both username and password."),
+          backgroundColor: Colors.grey[700],
+        ),
+      );
+      return;
+    }
+
+    try {
+      // Fetch admin credentials from Firestore
+      DocumentSnapshot adminDoc = await FirebaseFirestore.instance
+          .collection('admins')
+          .doc('admin1') // Replace with your actual admin document ID
+          .get();
+
+      if (adminDoc.exists) {
+        String storedUsername = adminDoc.get('username');
+        String storedPassword = adminDoc.get('password');
+
+        // Validate the username and password
+        if (username == storedUsername && password == storedPassword) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => Admin()), // Replace with your admin dashboard widget
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text("Invalid username or password."),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text("Admin credentials not found."),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("An error occurred: ${e.toString()}"),
+          backgroundColor: Colors.grey[700],
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Admin Login"),
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(30.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Welcome Back!',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 30),
+            TextField(
+              controller: _usernameController,
+              decoration: InputDecoration(
+                labelText: 'Username',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Password',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _loginAsAdmin,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Login as Admin',
+                style: TextStyle(fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+// Admin Page that we navigate to
+
+
+
+class Admin extends StatefulWidget {
+  const Admin({super.key});
+
+  @override
+  State<Admin> createState() => _AdminState();
+}
+
+class _AdminState extends State<Admin> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Batches"),
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3, // Number of buttons per row
+            crossAxisSpacing: 10, // Horizontal space between buttons
+            mainAxisSpacing: 10, // Vertical space between buttons
+            childAspectRatio: 1.5, // Aspect ratio for button size
+          ),
+          itemCount: 23, // Total number of batches
+          itemBuilder: (context, index) {
+            return ElevatedButton(
+              onPressed: () {
+                // Navigate to the BatchDetailPage with the current batch number
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BatchDetailPage(batchNumber: index + 1),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: Text(
+                "Batch ${index + 1}",
+                style: const TextStyle(fontSize: 16),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class BatchDetailPage extends StatelessWidget {
+  final int batchNumber;
+
+  const BatchDetailPage({super.key, required this.batchNumber});
+
+  // Mock function to generate up to 30 user infos for each batch
+  List<Map<String, String>> generateUserInfo(int batchNumber) {
+    List<Map<String, String>> userInfo = [];
+    for (int i = 1; i <= 30; i++) {
+      userInfo.add({
+        "name": "User $i of Batch $batchNumber",
+        "email": "user$i.batch$batchNumber@example.com",
+      });
+    }
+    return userInfo;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Generate up to 30 users for the given batch
+    final List<Map<String, String>> userInfo = generateUserInfo(batchNumber);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Batch $batchNumber Details"),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView.builder(
+          itemCount: userInfo.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Text(userInfo[index]["name"] ?? ""),
+              subtitle: Text(userInfo[index]["email"] ?? ""),
+              leading: const Icon(Icons.person),
+            );
+          },
+        ),
+      ),
+    );
   }
 }
 
 
 
-// SignUpPage
+
+
 class SignUpPage extends StatelessWidget {
+  // Controllers for the text fields
+  final TextEditingController NameController = TextEditingController();
+  final TextEditingController phoneNumberController = TextEditingController();
+  final TextEditingController RoomNumberController = TextEditingController();
+  final TextEditingController EmailController = TextEditingController();
+  final TextEditingController PasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
+
+  // Function to handle the sign-up process
+  Future<void> _registerUser(BuildContext context) async {
+    String name = NameController.text.trim();
+    String phone = phoneNumberController.text.trim();
+    String room = RoomNumberController.text.trim();
+    String email = EmailController.text.trim();
+    String password = PasswordController.text.trim();
+    String confirmPassword = confirmPasswordController.text.trim();
+
+    // Check if any field is empty
+    if (name.isEmpty || phone.isEmpty || room.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+      // Show a message if any field is empty
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Please fill in all the fields'),
+      ));
+      return;
+    }
+
+    // Check if the passwords match
+    if (password != confirmPassword) {
+      // Show error message if passwords do not match
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Passwords do not match'),
+      ));
+      return;
+    }
+
+    try {
+      // Create a new user with Firebase Authentication
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Get the current user
+      User? user = userCredential.user;
+
+      // Save user data in Firestore
+      await FirebaseFirestore.instance.collection('users').doc(user?.uid).set({
+        'name': name,
+        'phone': phone,
+        'room': room,
+        'email': email,
+        'uid': user?.uid,
+      });
+
+      // Navigate to the home page after successful sign-up
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MyStatelessApp()), // Replace with your home page
+      );
+    } catch (e) {
+      // Show error message if sign-up fails
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Sign-up failed: $e'),
+      ));
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -216,7 +509,6 @@ class SignUpPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Heading
             const Text(
               'Register',
               textAlign: TextAlign.center,
@@ -226,7 +518,6 @@ class SignUpPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 5),
-            // Subheading
             const Text(
               'Create a new account',
               textAlign: TextAlign.center,
@@ -237,8 +528,8 @@ class SignUpPage extends StatelessWidget {
             ),
             const SizedBox(height: 15),
 
-            // Name TextField
             TextField(
+              controller: NameController,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.person),
                 labelText: 'Name',
@@ -249,8 +540,8 @@ class SignUpPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // Phone No TextField
             TextField(
+              controller: phoneNumberController,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.phone),
                 labelText: 'Phone Number',
@@ -261,8 +552,8 @@ class SignUpPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // Room No TextField
             TextField(
+              controller: RoomNumberController,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.home),
                 labelText: 'Room Number',
@@ -273,8 +564,8 @@ class SignUpPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // Email TextField
             TextField(
+              controller: EmailController,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.email),
                 labelText: 'Email',
@@ -285,8 +576,8 @@ class SignUpPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // Password TextField
             TextField(
+              controller: PasswordController,
               obscureText: true,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.lock),
@@ -298,8 +589,8 @@ class SignUpPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // Confirm Password TextField
             TextField(
+              controller: confirmPasswordController,
               obscureText: true,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.lock_outline),
@@ -311,17 +602,10 @@ class SignUpPage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // Register Button without primary color
             ElevatedButton(
-              onPressed: () {
-                // Replace with home page after successful sign-up
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => MyStatelessApp()),
-                );// Register logic
-              },
+              onPressed: () => _registerUser(context), // Register logic
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white30, // Neutral color
+                backgroundColor: Colors.white30,
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -334,7 +618,6 @@ class SignUpPage extends StatelessWidget {
             ),
             const SizedBox(height: 15),
 
-            // Sign In Link without primary color
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -346,10 +629,9 @@ class SignUpPage extends StatelessWidget {
                   child: Text(
                     'Sign In',
                     style: TextStyle(
-                        color: Colors.grey[800], // Neutral color for the link
+                        color: Colors.grey[800],
                         fontWeight: FontWeight.bold,
-                        fontSize: 18
-                    ),
+                        fontSize: 18),
                   ),
                 ),
               ],
@@ -360,6 +642,7 @@ class SignUpPage extends StatelessWidget {
     );
   }
 }
+
 
 // Home page
 class MyStatelessApp extends StatefulWidget {
@@ -1230,10 +1513,17 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
+
 class _ProfilePageState extends State<ProfilePage> {
   final ImagePicker _picker = ImagePicker();
   XFile? _imageFile;
 
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _roomNumberController = TextEditingController();
+  final TextEditingController _phoneNumberController = TextEditingController();
+
+  // Method to select image from gallery
   void selectImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
@@ -1241,6 +1531,50 @@ class _ProfilePageState extends State<ProfilePage> {
         _imageFile = pickedFile;
       });
     }
+  }
+
+  // Method to fetch user data from Firestore
+  Future<void> _fetchUserData() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        // Fetch user data from Firestore
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+
+        if (userDoc.exists) {
+          print("User data: ${userDoc.data()}");
+
+          var userData = userDoc.data() as Map<String, dynamic>;
+
+          // Populate text fields with user data
+          setState(() {
+            _nameController.text = userData['name'] ?? '';
+            _emailController.text = userData['email'] ?? '';
+            _roomNumberController.text = userData['room'] ?? '';
+            _phoneNumberController.text = userData['phone'] ?? '';
+          });
+        } else {
+          print("User document does not exist.");
+        }
+      } catch (e) {
+        print("Error fetching user data: $e");
+      }
+    }
+  }
+
+  // Method to log out the user
+  Future<void> _logout() async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => SignInPage()), // Navigate to sign-in page
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();  // Fetch user data when the page is initialized
   }
 
   @override
@@ -1253,37 +1587,106 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         centerTitle: true,
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          const SizedBox(height: 20), // Space between AppBar and profile image
-          Center(
-            child: SizedBox(
-              height: 120,
-              width: 120,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  CircleAvatar(
-                    backgroundImage: _imageFile == null
-                        ? const AssetImage("assets/images/user.png")
-                        : FileImage(File(_imageFile!.path)) as ImageProvider,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              const SizedBox(height: 20), // Space between AppBar and profile image
+              Center(
+                child: SizedBox(
+                  height: 120,
+                  width: 120,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CircleAvatar(
+                        backgroundImage: _imageFile == null
+                            ? const AssetImage("assets/images/user.png")
+                            : FileImage(File(_imageFile!.path)) as ImageProvider,
+                      ),
+                      Positioned(
+                        bottom: 10,
+                        right: 10,
+                        child: IconButton(
+                          onPressed: selectImage,
+                          icon: const Icon(Icons.add_a_photo),
+                          color: Colors.blueAccent,
+                          iconSize: 24,
+                        ),
+                      ),
+                    ],
                   ),
-                  Positioned(
-                    bottom: 10,
-                    right: 10,
-                    child: IconButton(
-                      onPressed: selectImage,
-                      icon: const Icon(Icons.add_a_photo),
-                      color: Colors.blueAccent,
-                      iconSize: 24,
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
+              const SizedBox(height: 20), // Space between profile image and text fields
+
+              // Name TextField
+              TextField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  labelText: 'Name',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 15), // Gap between text fields
+
+              // Email TextField
+              TextField(
+                controller: _emailController,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 15), // Gap between text fields
+
+              // Room Number TextField
+              TextField(
+                controller: _roomNumberController,
+                decoration: InputDecoration(
+                  labelText: 'Room Number',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 15), // Gap between text fields
+
+              // Phone Number TextField
+              TextField(
+                controller: _phoneNumberController,
+                decoration: InputDecoration(
+                  labelText: 'Phone Number',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 30), // Gap before logout button
+
+              // Logout Button
+              ElevatedButton(
+                onPressed: _logout,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white70, // Set button color to red for logout
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(
+                  'Logout',
+                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
