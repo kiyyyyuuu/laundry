@@ -429,6 +429,7 @@ class BatchDetailPage extends StatelessWidget {
 
 
 
+
 class SignUpPage extends StatelessWidget {
   // Controllers for the text fields
   final TextEditingController NameController = TextEditingController();
@@ -449,7 +450,6 @@ class SignUpPage extends StatelessWidget {
 
     // Check if any field is empty
     if (name.isEmpty || phone.isEmpty || room.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
-      // Show a message if any field is empty
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Please fill in all the fields'),
       ));
@@ -458,7 +458,6 @@ class SignUpPage extends StatelessWidget {
 
     // Check if the passwords match
     if (password != confirmPassword) {
-      // Show error message if passwords do not match
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Passwords do not match'),
       ));
@@ -466,16 +465,13 @@ class SignUpPage extends StatelessWidget {
     }
 
     try {
-      // Create a new user with Firebase Authentication
       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Get the current user
       User? user = userCredential.user;
 
-      // Save user data in Firestore
       await FirebaseFirestore.instance.collection('users').doc(user?.uid).set({
         'name': name,
         'phone': phone,
@@ -484,19 +480,16 @@ class SignUpPage extends StatelessWidget {
         'uid': user?.uid,
       });
 
-      // Navigate to the home page after successful sign-up
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => MyStatelessApp()), // Replace with your home page
       );
     } catch (e) {
-      // Show error message if sign-up fails
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Sign-up failed: $e'),
       ));
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -533,6 +526,7 @@ class SignUpPage extends StatelessWidget {
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.person),
                 labelText: 'Name',
+                floatingLabelBehavior: FloatingLabelBehavior.always,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -545,6 +539,7 @@ class SignUpPage extends StatelessWidget {
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.phone),
                 labelText: 'Phone Number',
+                floatingLabelBehavior: FloatingLabelBehavior.always,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -557,6 +552,9 @@ class SignUpPage extends StatelessWidget {
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.home),
                 labelText: 'Room Number',
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                hintText: 'T2-810', // Example inside the box
+                hintStyle: TextStyle(color: Colors.grey), // Faded text
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -564,11 +562,15 @@ class SignUpPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
+
             TextField(
               controller: EmailController,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.email),
                 labelText: 'Email',
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                hintText: '@woxsen.edu.in',
+                hintStyle: TextStyle(color: Colors.grey),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -582,6 +584,7 @@ class SignUpPage extends StatelessWidget {
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.lock),
                 labelText: 'Password',
+                floatingLabelBehavior: FloatingLabelBehavior.always,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -595,6 +598,7 @@ class SignUpPage extends StatelessWidget {
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.lock_outline),
                 labelText: 'Confirm Password',
+                floatingLabelBehavior: FloatingLabelBehavior.always,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -603,7 +607,7 @@ class SignUpPage extends StatelessWidget {
             const SizedBox(height: 20),
 
             ElevatedButton(
-              onPressed: () => _registerUser(context), // Register logic
+              onPressed: () => _registerUser(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white30,
                 padding: const EdgeInsets.symmetric(vertical: 10),
@@ -644,6 +648,7 @@ class SignUpPage extends StatelessWidget {
 }
 
 
+
 // Home page
 class MyStatelessApp extends StatefulWidget {
   @override
@@ -656,10 +661,10 @@ class _MyAppState extends State<MyStatelessApp> {
   // Wash and Fold Clothes Quantities
   Map<String, int> washAndFoldClothesQuantities = {
     "Shirts": 0,
-    "T-Shirts": 0,
     "Shorts": 0,
     "Pants": 0,
-    "Hoodies": 0,
+    "Blankets": 0,
+
   };
 
   // Special Wash Clothes Quantities
@@ -904,18 +909,16 @@ class _MyAppState extends State<MyStatelessApp> {
                       buildClothesInputWithImage("Shirts",
                           "https://i.pinimg.com/564x/56/77/6b/56776bff129b159a5b28a3c77f9f23e7.jpg",
                           washAndFoldClothesQuantities),
-                      buildClothesInputWithImage("T-Shirts",
-                          "https://i.pinimg.com/564x/56/da/38/56da38304bc14602b0c0d441b40cc2a3.jpg",
-                          washAndFoldClothesQuantities),
                       buildClothesInputWithImage("Shorts",
                           "https://i.pinimg.com/564x/75/cf/fd/75cffdfca25bc3d68cd33dc81cd7e733.jpg",
                           washAndFoldClothesQuantities),
                       buildClothesInputWithImage('Pants',
                           "https://i.pinimg.com/564x/2c/dd/b1/2cddb11fa2115f14492ae356fa775317.jpg",
                           washAndFoldClothesQuantities),
-                      buildClothesInputWithImage("Hoodies",
-                          "https://i.pinimg.com/564x/83/45/2d/83452dfc62cbce478f1d048ff652a44a.jpg",
+                      buildClothesInputWithImage("Blankets",
+                          "https://i.pinimg.com/564x/0d/80/7e/0d807e0f03223c324b4adcd7743f4c61.jpg",
                           washAndFoldClothesQuantities),
+
                     ] else ...[
                       buildClothesInputWithImage("Shirts",
                           "https://i.pinimg.com/564x/56/77/6b/56776bff129b159a5b28a3c77f9f23e7.jpg",
